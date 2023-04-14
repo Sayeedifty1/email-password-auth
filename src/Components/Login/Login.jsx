@@ -4,6 +4,10 @@ import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import app from '../../firebase/firebase.config';
+import { Link } from 'react-router-dom';
+const auth = getAuth(app);
 
 const Login = () => {
     const [error, setError] = useState('');
@@ -31,6 +35,16 @@ const Login = () => {
         }
         setSuccess('Login successful!');
 
+        // sign in auth
+        signInWithEmailAndPassword(auth , email, password)
+        .then(result =>{
+            const loggedUser = result.user;
+            setSuccess('user login successfully')
+        })
+
+        .catch (error =>{
+            setError(error.message);
+        })
     }
     return (
         <Container>
@@ -57,9 +71,10 @@ const Login = () => {
                             Login
                         </Button>
                     </Form>
-
+                    <p><small>new to this website? please <Link to="/register">Register</Link></small></p>
                 </Col>
             </Row>
+           
         </Container>
     );
 };
