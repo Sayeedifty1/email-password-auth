@@ -12,10 +12,27 @@ const Register = () => {
     const [success , setSuccess] = useState("")
 
     const handleSubmit = (event) =>{
+        // 1. prevent page refresh
         event.preventDefault()
+        setSuccess('');
+        setError('');
+        // collect form data
         const email =event.target.email.value;
         const password = event.target.password.value;
         console.log(email , password)
+        // Validate
+        if(!/(?=.*[A-Z])/.test(password)){
+            setError('please add at least one uppercase');
+            return;
+        }
+        else if (!/(?=.*?[0-9].*[0-9])/.test(password)){
+            setError('Please add at least two numbers');
+            return;
+        }
+        else if (password.length<6){
+            setError('please add at least 6 characters in your password ');
+            return ;
+        }
         //  create user with email and password
         createUserWithEmailAndPassword(auth , email , password)
         .then(result => {
@@ -28,7 +45,7 @@ const Register = () => {
         .catch(error=>{
             console.log(error.message);
             setError(error.message);
-            setSuccess('');
+            
         })
     }
 
