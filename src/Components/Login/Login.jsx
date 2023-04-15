@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import app from '../../firebase/firebase.config';
 import { Link } from 'react-router-dom';
 const auth = getAuth(app);
@@ -12,6 +12,7 @@ const auth = getAuth(app);
 const Login = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const emailRef = useRef();
     const handleLogIn = (event) => {
         event.preventDefault()
         const form = event.target;
@@ -39,13 +40,34 @@ const Login = () => {
         signInWithEmailAndPassword(auth , email, password)
         .then(result =>{
             const loggedUser = result.user;
+            console.log(loggedUser)
             setSuccess('user login successfully')
+            if(!loggedUser.emailVerified){
+                alert('verify your email first');
+                return;
+            }
         })
 
         .catch (error =>{
             setError(error.message);
         })
     }
+
+    const handleResetPassword = event =>{
+        const email = emailRef.current.value;
+        if (!email){
+            alert('provide email to reset password')
+        }
+        sendPasswordResetEmail(auth , email)
+        .then(()=> {
+            alert('check your email')
+        })
+        .catch(error => {
+            console.log(error)
+            setError(error.message)
+        })
+    }
+
     return (
         <Container>
             <Row className="justify-content-center">
@@ -54,7 +76,7 @@ const Login = () => {
                     <Form onSubmit={handleLogIn}>
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label>Email address</Form.Label>
-                            <Form.Control type="email" name="email" placeholder="Enter email" required />
+                            <Form.Control type="email" name="email" ref={emailRef} placeholder="Enter email" required />
 
                         </Form.Group>
 
@@ -71,6 +93,7 @@ const Login = () => {
                             Login
                         </Button>
                     </Form>
+                    <p><small>Forgot Password? <button on onClick={handleResetPassword} className='btn btn-link'>reset now</button></small></p>
                     <p><small>new to this website? please <Link to="/register">Register</Link></small></p>
                 </Col>
             </Row>
