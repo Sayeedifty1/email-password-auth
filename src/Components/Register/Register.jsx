@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import app from '../../firebase/firebase.config'
-import {createUserWithEmailAndPassword, getAuth, sendEmailVerification} from 'firebase/auth';
+import {createUserWithEmailAndPassword, getAuth, sendEmailVerification, updateProfile} from 'firebase/auth';
 import { Link } from 'react-router-dom';
 
 
@@ -18,6 +18,7 @@ const Register = () => {
         setSuccess('');
         setError('');
         // collect form data
+        const name = event.target.name.value;
         const email =event.target.email.value;
         const password = event.target.password.value;
         console.log(email , password)
@@ -43,6 +44,7 @@ const Register = () => {
             event.target.reset()
             setSuccess ("User created Successfully");
             sendVerificationEmail(result.user);
+            updateUserData(result.user ,name)
         })
         .catch(error=>{
             console.log(error.message);
@@ -59,6 +61,19 @@ const Register = () => {
         }) 
     }
 
+    const updateUserData = (user, name) => {
+        updateProfile(user, {
+          displayName: name
+        })
+        .then(() => {
+          console.log('user name updated')
+        })
+        .catch(error => {
+          setError(error.message)
+        })
+      }
+      
+
     const handleEmailChange = (event)=>{
         // console.log(event.target.value);
         // setEmail(event.target.value);
@@ -70,6 +85,7 @@ const Register = () => {
         <div className='mx-auto w-50'>
             <h4>Please Register</h4>
             <form onSubmit={handleSubmit}>
+                <input className='w-50 mb-4'  type="text" name="name" id="name;" placeholder='Your Name' required /> <br />
                 <input className='w-50 mb-4' onChange={handleEmailChange} type="email" name="email" id="email;" placeholder='Your email' required /> <br />
                 <input className='w-50 mb-4' onBlur={handlePasswordBlur} type="password" name="password" id="password;" placeholder='Your Password' required /> <br />
                 <p className='text-danger'>{error}</p>

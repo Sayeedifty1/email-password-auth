@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
@@ -7,12 +8,17 @@ import Col from 'react-bootstrap/Col';
 import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import app from '../../firebase/firebase.config';
 import { Link } from 'react-router-dom';
+import './Login.css'; // Import custom styles
 const auth = getAuth(app);
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 
 const Login = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const emailRef = useRef();
+
     const handleLogIn = (event) => {
         event.preventDefault()
         const form = event.target;
@@ -23,7 +29,7 @@ const Login = () => {
         setSuccess('');
         // Validation
         if (!/(?=.*[A-Z])/.test(password)) {
-            setError('please add at least one uppercase');
+            setError('Please add at least one uppercase letter');
             return;
         }
         else if (!/(?=.*?[0-9].*[0-9])/.test(password)) {
@@ -31,74 +37,81 @@ const Login = () => {
             return;
         }
         else if (password.length < 6) {
-            setError('please add at least 6 characters in your password ');
+            setError('Please add at least 6 characters to your password');
             return;
         }
         setSuccess('Login successful!');
 
         // sign in auth
-        signInWithEmailAndPassword(auth , email, password)
-        .then(result =>{
-            const loggedUser = result.user;
-            console.log(loggedUser)
-            setSuccess('user login successfully')
-            if(!loggedUser.emailVerified){
-                alert('verify your email first');
-                return;
-            }
-        })
+        signInWithEmailAndPassword(auth, email, password)
+            .then(result => {
+                const loggedUser = result.user;
+                console.log(loggedUser)
+                setSuccess('User login successful!')
+                if (!loggedUser.emailVerified) {
+                    alert('Please verify your email first');
+                    return;
+                }
+            })
 
-        .catch (error =>{
-            setError(error.message);
-        })
+            .catch(error => {
+                setError(error.message);
+            })
     }
 
-    const handleResetPassword = event =>{
+    const handleResetPassword = event => {
         const email = emailRef.current.value;
-        if (!email){
-            alert('provide email to reset password')
+        if (!email) {
+            alert('Please provide an email to reset your password')
         }
-        sendPasswordResetEmail(auth , email)
-        .then(()=> {
-            alert('check your email')
-        })
-        .catch(error => {
-            console.log(error)
-            setError(error.message)
-        })
+        sendPasswordResetEmail(auth, email)
+            .then(() => {
+                alert('Please check your email to reset your password')
+            })
+            .catch(error => {
+                console.log(error)
+                setError(error.message)
+            })
     }
+    const toggleShowPassword = () => {
+        setShowPassword((prevState) => !prevState);
+    };
 
     return (
         <Container>
             <Row className="justify-content-center">
                 <Col md={6} sm={9} xs={12}>
-                    <h1 className='text-warning mb-4'>Please Login</h1>
-                    <Form onSubmit={handleLogIn}>
+                    <h1 className='text-center mb-4'>Please Login</h1>
+                    <Form onSubmit={handleLogIn} className="login-form">
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label>Email address</Form.Label>
                             <Form.Control type="email" name="email" ref={emailRef} placeholder="Enter email" required />
-
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formBasicPassword">
                             <Form.Label>Password</Form.Label>
-                            <Form.Control type="password" name="password" placeholder="Password" required />
+                            <div className="password-field">
+                                <Form.Control type={showPassword ? 'text' : 'password'} name="password" placeholder="Password" required />
+                                <i onClick={toggleShowPassword} className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} password-toggle-icon`} />
+                            </div>
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="formBasicCheckbox">
                             <Form.Check type="checkbox" label="Remember me" />
                         </Form.Group>
+
                         {error && <p className='text-danger'>{error}</p>}
                         {success && <p className='text-success'>{success}</p>}
-                        <Button variant="primary" type="Login">
+
+                        <Button variant="primary" type="submit" className="w-100">
                             Login
                         </Button>
                     </Form>
-                    <p><small>Forgot Password? <button on onClick={handleResetPassword} className='btn btn-link'>reset now</button></small></p>
+                    <p><small>Forgot Password? <button onClick={handleResetPassword} className='btn btn-link'>reset now</button></small></p>
                     <p><small>new to this website? please <Link to="/register">Register</Link></small></p>
                 </Col>
             </Row>
-           
-        </Container>
+
+        </Container >
     );
 };
 
